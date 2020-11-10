@@ -3,8 +3,7 @@
 
 # import data frame
 
-`dfraw_201` <- read.csv("/Users/bethfisher/Documents/Simcolourproject_online/data/_Simcolourproject_2stim_asymm_good_2020_Oct_26_1029.csv")
-#select relevant trial variables
+`dfraw_201` <- read.csv("/Users/bethfisher/Downloads/PARTICIPANT_Simcolourproject_2stim_asymm_v4_2020-11-09_10h50.34.639.csv")
 trial_vars<- c( "participant",
                 "Colour_1", "Colour_2", "Colour1", "Colour2", 
                 "similarity", "response_time", "catchnumber", "Ecc", "catchnumberprac")
@@ -79,24 +78,6 @@ axis.line.y = element_line(colour = 'black', size=0.5, linetype='solid'))
 # stealing ability to make flat violin plots
 source("https://gist.githubusercontent.com/benmarwick/2a1bb0133ff568cbe28d/raw/fb53bd97121f7f9ce947837ef1a4c65a73bffb3f/geom_flat_violin.R")
 
-
-# Plot a dissimilarity matrix
-dissimplot <- function(dftrials,colors,dependent='color'){
-    
-    plot <- ggplot(dftrials, aes(x = Colour1, y = Colour2)) +
-      theme(axis.text.x = element_text(colour = colors), axis.text.y = element_text(colour = colors),
-                      axis.title.x = element_blank(), axis.title.y = element_blank(),
-                      plot.title = element_text(hjust = 0.5))
-    
-    # stuff that's standard across plot types
-        plot <- plot + geom_raster(aes(fill = similarity)) +
-                labs(title = 'Temporal Plot') +
-                scale_fill_gradientn(colours = c("white","black")) +
-                guides(fill=guide_legend(title="Dissimilarity"))
-    return(plot)
-}
-
-dissimplot(dftrials,colors,dependent='color')
 
 # Similarity judgment histogram
 simhistplot <- function(datadf){
@@ -424,12 +405,20 @@ asymValues_list2 <- function(datadf){
 
 
 # Dissimplot for all data 
+datadf <- aggregate(datadf, by = list(datadf$Color_1, datadf$Color_2),FUN=mean)
+datadf$Color_1 <- datadf$Group.1
+datadf$Color_2 <- datadf$Group.2
+datatemp <- dissimdata2(dftrials, colors)
+datatemp <- aggregate(datatemp, by = list(datatemp$Colour1, datatemp$Colour2),FUN=mean)
+
+
 dissimplot_temporal <- function(datadf,colors,dependent='color'){
     
     # refine data using function "dissimdata2 "
-    datatemp <- dissimdata2(dfrials, colors)
-
-    plot <- ggplot(datatemp, aes(x = Colour1, y = Colour2)) +
+    datatemp <- dissimdata2(dftrials, colors)
+    datatemp <- aggregate(datatemp, by = list(datatemp$Colour1, datatemp$Colour2),FUN=mean)
+    
+    plot <- ggplot(datatemp, aes(x = Group.1, y = Group.2)) +
     theme(axis.text.x = element_text(colour = colors), axis.text.y = element_text(colour = colors),
                       axis.title.x = element_blank(), axis.title.y = element_blank(),
                       plot.title = element_text(hjust = 0.5))
@@ -443,7 +432,8 @@ dissimplot_temporal <- function(datadf,colors,dependent='color'){
 }
 
 dissimplot_temporal(dftrials,colors,dependent='color')
-# Plot a dismiliarity matrix for each subject manually 
+
+# Plot a dissmiliarity matrix for each subject manually 
 dissimplot_temporal_subject <- function(datadf, colors, ID){
   
   #Subset data for the subject 

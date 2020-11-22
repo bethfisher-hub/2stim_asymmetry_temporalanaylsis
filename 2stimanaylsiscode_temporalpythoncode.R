@@ -3,24 +3,184 @@
 
 # import data frame
 
-`dfraw_201` <- read.csv("/Users/bethfisher/Downloads/PARTICIPANT_Simcolourproject_2stim_asymm_v4_2020-11-09_10h50.34.639.csv")
+`dfraw_201` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5db43b6a2f45e7000bb7ab5c_Colour_Similarity_Experiment_2020-11-19_05h15.33.032.csv")
+`dfraw_202` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5ac56ef9fa3b4e0001737190_Colour_Similarity_Experiment_2020-11-19_01h15.45.795.csv")
+`dfraw_203` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5f813d7e8973881f63254341_Colour_Similarity_Experiment_2020-11-18_23h40.09.657.csv")
+`dfraw_204` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5ea5a65ce9c797598273b3ba_Colour_Similarity_Experiment_2020-11-19_04h34.10.630.csv")
+`dfraw_205` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5f40c462ff2ee620d5bc5acd_Colour_Similarity_Experiment_2020-11-18_20h52.02.060.csv")
+`dfraw_206` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5f3eae2b3dd0a010c0002168_Colour_Similarity_Experiment_2020-11-19_04h38.25.830.csv")
+`dfraw_207` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5eadd6d03dcdd00d2aea4c72_Colour_Similarity_Experiment_2020-11-18_20h50.28.028.csv")
+`dfraw_208` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5b3937c57bc6be00010caf12_Colour_Similarity_Experiment_2020-11-18_20h38.33.652.csv")
+`dfraw_209` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5b99c0a6a9c8150001d33bbc_Colour_Similarity_Experiment_2020-11-18_18h43.25.664.csv")
+`dfraw_210` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5eac66ab9334300f4c37121b_Colour_Similarity_Experiment_2020-11-19_03h32.57.276.csv")
+`dfraw_211` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5b2b03070ec82d0001d28898_Colour_Similarity_Experiment_2020-11-18_23h36.36.213.csv")
+`dfraw_212` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5f514e2a5552dd37bc2060f3_Colour_Similarity_Experiment_2020-11-19_02h34.00.585.csv")
+`dfraw_213` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5cf80c2ccbe8f10016dba137_Colour_Similarity_Experiment_2020-11-18_20h34.49.712.csv")
+`dfraw_214` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5fa27915a7a32b44f3b2f44a_Colour_Similarity_Experiment_2020-11-19_03h31.31.209.csv")
+`dfraw_215` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5d4857023c661b0001653a5d_Colour_Similarity_Experiment_2020-11-20_01h01.24.749.csv")
+
+
 trial_vars<- c( "participant",
                 "Colour_1", "Colour_2", "Colour1", "Colour2", 
-                "similarity", "response_time", "catchnumber", "Ecc", "catchnumberprac")
+                "similarity", "response_time", "catchnumber", "Ecc", "catchnumberprac", "catchresponse", "catchtrialorder", "screen_size_x","screen_size_y","viewerdistancecm", 'viewer_distance',"trialnumber")
 
 dftrials_201 <- dfraw_201[trial_vars]
-
-#select trial rows for trials
-dftrials<- dftrials_201[which(!is.na(dftrials_201$Colour1)),] 
+dftrials_202 <- dfraw_202[trial_vars]
+dftrials_203 <- dfraw_203[trial_vars]
+dftrials_204 <- dfraw_204[trial_vars]
+dftrials_205 <- dfraw_205[trial_vars]
+dftrials_206 <- dfraw_206[trial_vars]
+dftrials_207 <- dfraw_207[trial_vars]
+dftrials_208 <- dfraw_208[trial_vars]
+dftrials_209 <- dfraw_209[trial_vars]
+dftrials_210 <- dfraw_210[trial_vars]
+dftrials_211 <- dfraw_211[trial_vars]
+dftrials_212 <- dfraw_212[trial_vars]
+dftrials_213 <- dfraw_213[trial_vars]
+dftrials_214 <- dfraw_214[trial_vars]
+dftrials_215 <- dfraw_215[trial_vars]
 
 # Create one data frame with all participants  
-dftrials <- rbind(dftrials_201)
+dftrials <- rbind(dftrials_201, dftrials_202, dftrials_203, dftrials_204, dftrials_205, dftrials_206, dftrials_207, dftrials_208, dftrials_209, dftrials_210, dftrials_211, dftrials_212, dftrials_213, dftrials_214, dftrials_215)
+
+dftrials$trialnumber <-as.factor(dftrials$trialnumber)
+
+
+#select trial rows for trials
+#dftrials<- dftrials_201[which(!is.na(dftrials_201$Colour1)),] 
+
+
 
 stimuli_number = 9
 response_type_list = c('during')
 response_names = c('During')
 trial_types = c('during')
 catch_trial_number = 20
+
+
+# Screen parameters
+
+# Screen size function 
+
+screen_size <- function(dftrials){
+  
+  dftrials<- subset(dftrials, !is.na(screen_size_x), !is.na(screen_size_y))
+
+  width <- as.numeric(substr(as.character(dftrials$screen_size_x)[1],1,6))
+  height <- as.numeric(substr(as.character(dftrials$screen_size_y)[1],1,6))
+  
+  # use pythagoras to just get the hypotenuse. Subjects have a fixed 16/9 aspect ratio so these are all comparable
+  return(sqrt(width*width + height*height))
+}
+
+# View distance function 
+
+view_distance <- function(datadf){
+  return(as.numeric(substr(as.character(datadf$viewer_distance)[1],1,6)))
+}
+
+# Calculate screen parameters for each participant 
+
+screen_parameters <- function(dftrials,individual=FALSE){
+  
+  subjectlist <- sort(unique(dftrials$participant))
+  print("Screen Parameters")
+  screen_fail = 0
+  viewing_fail = 0
+  for (participant in subjectlist){
+
+    subjectdf <- dftrials[which(dftrials$participant == participant),] 
+    
+    
+    screen_size <- round(screen_size(subjectdf)/10,1)
+    viewing_distance <- round(view_distance(subjectdf)/10,1)
+    
+    if(screen_size < 20){screen_fail = screen_fail + 1}
+    if(viewing_distance < 30){viewing_fail = viewing_fail + 1}
+    
+    if(individual){
+      print(paste("Subject",participant,":"))
+      print(paste("Screen size:",screen_size,"cm"))
+      print(paste("Viewing distance:",viewing_distance,"cm"))
+      print("")
+    }
+    
+    
+  }
+  print("")
+  print(paste("Screen size issues:",screen_fail,"/",length(subjectlist)))
+  print(paste("Viewing distance issues:",viewing_fail,"/",length(subjectlist)))
+}  
+  
+dftrials$catch <- 
+dfcatch$catch[dfcatch$catchtrialo[[2]] == dfcatch$trialnumber.F] <- 1
+print(dftrials$catchtrialorder[1] & trialnumber ==1)
+
+dfcatch$catchtrialo <- lapply(str_split(dfcatch$catchtrialo,","), as.numeric)
+
+dfcatch$catchtrialo <- unlist(dfcatch$catchtrialo)
+
+print(dfcatch$catchtrialo[[2]])
+
+library(stringr)
+
+dfcatch$catchtrialo <- unlist(dfcatch$catchtrialorder)
+
+as.integer(unlist(dfcatch$catchtrialorder))
+
+as.numeric(dfcatch$catchtrialorder)
+
+print
+
+
+dfcatch <- dftrials[which(!is.na(dftrials$trialnumber)),] 
+               
+print(dfcatch$catchtrialorder[[1]])
+
+dfcatch$catch <- NA
+dfcatch$catch[dfcatch$catchtrialorder[[2]] == dfcatch$trialnumber] <- 1
+print(dfcatch$catchtrialorder[[2]])
+      
+dftrials_201$catch[dftrials_201$trialnumber==dftrials_201$catchtrialorder[[1]],] <- 1
+print(dftrials$catchtrialorder)
+
+# Catch trial results 
+
+# calculate the catch trial score for a subject
+catch_score <- function(dftrials){
+  dftrials <- subset(dftrials,  catchtrialorder[1] == trialnumber, trialnumber == catchtrialorder[2], trialnumber == catchtrialorder[3], trialnumber == catchtrialorder[4], trialnumber == catchtrialorder[5], trialnumber == catchtrialorder[6], trialnumber == catchtrialorder[7], trialnumber == catchtrialorder[8], trialnumber == catchtrialordrer[9], trialnumber == catchtrialorder[10], trialnumber == catchtrialorder[11], trialnumber == catchtrialorder[12], trialnumber == catchtrialorder[13], trialnumber == catchtrialorder[14], trialnumber == catchtrialorder[15],trialnumber == catchtrialorder[16], trialnumber == catchtrialorder[17], trialnumber == catchtrialordrer[18], trialnumber == catchtrialorder[19],trialnumber == catchtrialorder[20])
+  dftrials$correct <- ifelse(dftrials$catchnumber == dftrials$catchresponse, 1, 0) # determine whether they got the catch trials right
+  score <- sum(datadf$correct)/nrow(datadf) # get the score
+  return(score)
+}
+catch_score(dftrials)
+
+
+catch_score <- function(dftrials_201){
+  dftrials_201 <- subset(dftrials_201,  catchtrialorder[1] == trialnumber, trialnumber == catchtrialorder[2], trialnumber == catchtrialorder[3], trialnumber == catchtrialorder[4], trialnumber == catchtrialorder[5], trialnumber == catchtrialorder[6], trialnumber == catchtrialorder[7], trialnumber == catchtrialorder[8], trialnumber == catchtrialordrer[9], trialnumber == catchtrialorder[10], trialnumber == catchtrialorder[11], trialnumber == catchtrialorder[12], trialnumber == catchtrialorder[13], trialnumber == catchtrialorder[14], trialnumber == catchtrialorder[15],trialnumber == catchtrialorder[16], trialnumber == catchtrialorder[17], trialnumber == catchtrialordrer[18], trialnumber == catchtrialorder[19],trialnumber == catchtrialorder[20])
+  dftrials_201$correct <- ifelse(dftrials_201$catchnumber == dftrials_201$catchresponse, 1, 0) # determine whether they got the catch trials right
+  score <- sum(dftrials_201$correct)/nrow(dftrials_201) # get the score
+  return(score)
+}
+catch_score(dftrials_201)
+# catch trial checker
+catch_trial_checker <- function(datadf){
+  
+  subjectlist <- sort(unique(dftrials$participant))
+  print("Catch scores")
+  for (participant in subjectlist){
+    subjectdf <- dftrials[which(dftrials$participant == participant),] 
+    
+    catch_trials <- subset(dftrials, trialnumber == catchtrialorder[1], trialnumber == catchtrialorder[2], trialnumber == catchtrialorder[3], trialnumber == catchtrialorder[4], trialnumber == catchtrialorder[5], trialnumber == catchtrialorder[6], trialnumber == catchtrialorder[7], trialnumber == catchtrialorder[8], trialnumber == catchtrialordrer[9], trialnumber == catchtrialorder[10], trialnumber == catchtrialorder[11], trialnumber == catchtrialorder[12], trialnumber == catchtrialorder[13], trialnumber == catchtrialorder[14], trialnumber == catchtrialorder[15],trialnumber == catchtrialorder[16], trialnumber == catchtrialorder[17], trialnumber == catchtrialordrer[18], trialnumber == catchtrialorder[19],trialnumber == catchtrialorder[20])
+    catch_num = nrow(catch_trials)
+    catch_correct = nrow(subset(catch_trials, catchnumber == catchresponse))
+    
+    print(paste("Subject",participant,":",catch_correct,"/",catch_num))
+  }
+}
+
+catch_trial_checker(dftrials)
+
 
 trace_cutoff = 2 # mean dissimilarity for physically identical colours must be below this
 antitrace_cutoff = 3.5 # mean dissimilarity accepted for maximally physically different colours must be above this
@@ -111,7 +271,7 @@ rsplot <- function(datadf){
     plot <- ggplot(dftrials, aes(x= similarity, y=response_time)) + 
     stat_summary(fun.y = mean, geom = "bar") + 
     stat_summary(fun.data = mean_se, geom = "errorbar", size =0.5, aes(width=0.5)) +
-    scale_x_discrete(limits=c(0,1,2,3,4,5,6,7), name = 'Dissimilarity') + ylab('Reaction Time (ms)') +
+    scale_x_discrete(limits=c(0,1,2,3,4,5,6,7), name = 'Dissimilarity') + ylab('Reaction Time (s)') +
     theme(legend.position = "none") +
     ylim(0,4) # anyone taking more than 4 seconds has probably mindwandered
     
@@ -167,7 +327,7 @@ rsplot_raincloud <- function(datadf,xtype='linear'){
     return(plot)
 }
 
-rsplot_raincloud(datadf,xtype='linear')
+rsplot_raincloud(dftrials,xtype='linear')
 
 # correlation between reaction times and similarity judgements
 # grouping at individual trial, individual participant, experiment or entire population level
@@ -184,7 +344,7 @@ rt_similarity_cor <- function(datadf,level='participant'){
     return(datadf)
     
 }
-
+rt_similarity_cor(dftrials,level='participant')
 
 rt_similarity_plot <- function(datadf,xlabel='BLANK'){
     
@@ -202,6 +362,8 @@ rt_similarity_plot <- function(datadf,xlabel='BLANK'){
     plot <- plot + geom_hline(yintercept=0, linetype="dashed", color = "blue")
     return(plot)
 }
+
+rt_similarity_plot(dftrials,xlabel='BLANK')
 
 
 # subject info

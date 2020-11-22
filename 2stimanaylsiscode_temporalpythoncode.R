@@ -43,19 +43,14 @@ dftrials_215 <- dfraw_215[trial_vars]
 # Create one data frame with all participants  
 dftrials <- rbind(dftrials_201, dftrials_202, dftrials_203, dftrials_204, dftrials_205, dftrials_206, dftrials_207, dftrials_208, dftrials_209, dftrials_210, dftrials_211, dftrials_212, dftrials_213, dftrials_214, dftrials_215)
 
-dftrials$trialnumber <-as.factor(dftrials$trialnumber)
+# Save dataframe
+setwd("/Users/bethfisher/Documents/Pilotdata_simcolour")
+save(dftrials, file="dftrials_pilotdata.Rdata")
 
+# Load data
+setwd("/Users/bethfisher/Documents/Pilotdata_simcolour")
+load("dftrials_pilotdata.Rdata") 
 
-#select trial rows for trials
-#dftrials<- dftrials_201[which(!is.na(dftrials_201$Colour1)),] 
-
-
-
-stimuli_number = 9
-response_type_list = c('during')
-response_names = c('During')
-trial_types = c('during')
-catch_trial_number = 20
 
 
 # Screen parameters
@@ -111,38 +106,91 @@ screen_parameters <- function(dftrials,individual=FALSE){
   print(paste("Screen size issues:",screen_fail,"/",length(subjectlist)))
   print(paste("Viewing distance issues:",viewing_fail,"/",length(subjectlist)))
 }  
-  
-dftrials$catch <- 
-dfcatch$catch[dfcatch$catchtrialo[[2]] == dfcatch$trialnumber.F] <- 1
-print(dftrials$catchtrialorder[1] & trialnumber ==1)
 
-dfcatch$catchtrialo <- lapply(str_split(dfcatch$catchtrialo,","), as.numeric)
 
-dfcatch$catchtrialo <- unlist(dfcatch$catchtrialo)
+screen_parameters(dftrials,individual=TRUE)
 
-print(dfcatch$catchtrialo[[2]])
+## HELP NEEDED CATCH TRIAL ORDER INTO VECTOR ##
 
 library(stringr)
 
-dfcatch$catchtrialo <- unlist(dfcatch$catchtrialorder)
-
-as.integer(unlist(dfcatch$catchtrialorder))
-
-as.numeric(dfcatch$catchtrialorder)
-
-print
-
+# Create data frame with catch trial order 
 
 dfcatch <- dftrials[which(!is.na(dftrials$trialnumber)),] 
-               
-print(dfcatch$catchtrialorder[[1]])
 
-dfcatch$catch <- NA
-dfcatch$catch[dfcatch$catchtrialorder[[2]] == dfcatch$trialnumber] <- 1
-print(dfcatch$catchtrialorder[[2]])
-      
-dftrials_201$catch[dftrials_201$trialnumber==dftrials_201$catchtrialorder[[1]],] <- 1
-print(dftrials$catchtrialorder)
+# Creates numeric vector but the first and last numbers are NA
+
+dfcatch$catchtrialnumeric <- lapply(str_split(dfcatch$catchtrialorder,","), as.numeric)
+
+# Does not work only NAs
+dfcatch$catchtrialnum <- as.numeric(dfcatch$catchtrialorder)
+
+
+
+# My attempt 
+
+subjectdf <- dfcatch[which(dfcatch$participant == '5db43b6a2f45e7000bb7ab5c'),] 
+catchtrialorderv <- c(194,66,46,191,122,18,180,70,148,30,165,120,117,196,248,111,12,28,121,190)
+subjectdf$catchtrialo <- NA
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[1]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[2]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[3]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[4]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[5]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[6]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[7]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[8]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[9]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[10]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[11]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[12]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[13]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[14]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[15]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[16]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[17]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[18]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[19]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[20]] <-1
+subjectdf <- subjectdf[which(subjectdf$catchtrialo==1),] 
+subjectdf$correct <- ifelse(subjectdf$catchresponse == subjectdf$catchnumber,1,0)
+score <- sum(subjectdf$correct)/nrow(subjectdf)
+print(score)
+
+
+
+subjectdf <- dfcatch[which(dfcatch$participant == '5f813d7e8973881f63254341'),] 
+subjectdf$catchtrialo <- NA
+subjectdf$catchtrialo[subjectdf$trialnumber == subjectdf$catchtrialorder[1]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[2]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[3]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[4]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[5]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[6]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[7]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[8]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[9]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[10]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[11]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[12]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[13]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[14]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[15]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[16]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[17]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[18]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[19]] <-1
+subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[20]] <-1
+subjectdf <- subjectdf[which(subjectdf$catchtrialo==1),] 
+subjectdf$correct <- ifelse(subjectdf$catchresponse == subjectdf$catchnumber,1,0)
+score <- sum(subjectdf$correct)/nrow(subjectdf)
+print(score)
+
+
+
+dfcatch$trialnumber[dfcatch$participant == '5db43b6a2f45e7000bb7ab5c']	
+
+
 
 # Catch trial results 
 

@@ -1,6 +1,5 @@
 # Code from Ariel and Yusuke 
 
-
 # import data frame
 
 `dfraw_201` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5db43b6a2f45e7000bb7ab5c_Colour_Similarity_Experiment_2020-11-19_05h15.33.032.csv")
@@ -47,13 +46,35 @@ dftrials <- rbind(dftrials_201, dftrials_202, dftrials_203, dftrials_204, dftria
 setwd("/Users/bethfisher/Documents/Pilotdata_simcolour")
 save(dftrials, file="dftrials_pilotdata.Rdata")
 
-# Load data
+# LOAD DATA
 setwd("/Users/bethfisher/Documents/Pilotdata_simcolour")
 load("dftrials_pilotdata.Rdata") 
 
+# live dangerously, get rid of pesky warnings
+oldw <- getOption("warn")
+options(warn = -1)
+
+shhh <- suppressPackageStartupMessages # stops annoying warnings when loading libraries
+library(tidyr)
+library(plyr)
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+library(MASS)
+library(Matrix)
+library(reshape2)
+library(ape) # stats
+library(vegan) # stats
+library(RColorBrewer)
+library(cocor)
+library(DescTools)
+library(reshape2)
+library(grid)
+library(ggplotify)
 
 
-# Screen parameters
+
+# Screen parameters 
 
 # Screen size function 
 
@@ -242,27 +263,6 @@ plotexpsummary = FALSE
 across = FALSE
 population = FALSE
 
-# live dangerously, get rid of pesky warnings
-oldw <- getOption("warn")
-options(warn = -1)
-
-shhh <- suppressPackageStartupMessages # stops annoying warnings when loading libraries
-library(tidyr)
-library(plyr)
-library(dplyr)
-library(ggplot2)
-library(gridExtra)
-library(MASS)
-library(Matrix)
-library(reshape2)
-library(ape) # stats
-library(vegan) # stats
-library(RColorBrewer)
-library(cocor)
-library(DescTools)
-library(reshape2)
-library(grid)
-library(ggplotify)
 
 
 # rainbowcloud theme for plotting, stolen from: 

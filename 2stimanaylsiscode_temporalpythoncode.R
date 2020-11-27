@@ -1,55 +1,5 @@
 # Code from Ariel and Yusuke 
 
-# import data frame
-
-`dfraw_201` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5db43b6a2f45e7000bb7ab5c_Colour_Similarity_Experiment_2020-11-19_05h15.33.032.csv")
-`dfraw_202` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5ac56ef9fa3b4e0001737190_Colour_Similarity_Experiment_2020-11-19_01h15.45.795.csv")
-`dfraw_203` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5f813d7e8973881f63254341_Colour_Similarity_Experiment_2020-11-18_23h40.09.657.csv")
-`dfraw_204` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5ea5a65ce9c797598273b3ba_Colour_Similarity_Experiment_2020-11-19_04h34.10.630.csv")
-`dfraw_205` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5f40c462ff2ee620d5bc5acd_Colour_Similarity_Experiment_2020-11-18_20h52.02.060.csv")
-`dfraw_206` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5f3eae2b3dd0a010c0002168_Colour_Similarity_Experiment_2020-11-19_04h38.25.830.csv")
-`dfraw_207` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5eadd6d03dcdd00d2aea4c72_Colour_Similarity_Experiment_2020-11-18_20h50.28.028.csv")
-`dfraw_208` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5b3937c57bc6be00010caf12_Colour_Similarity_Experiment_2020-11-18_20h38.33.652.csv")
-`dfraw_209` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5b99c0a6a9c8150001d33bbc_Colour_Similarity_Experiment_2020-11-18_18h43.25.664.csv")
-`dfraw_210` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5eac66ab9334300f4c37121b_Colour_Similarity_Experiment_2020-11-19_03h32.57.276.csv")
-`dfraw_211` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5b2b03070ec82d0001d28898_Colour_Similarity_Experiment_2020-11-18_23h36.36.213.csv")
-`dfraw_212` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5f514e2a5552dd37bc2060f3_Colour_Similarity_Experiment_2020-11-19_02h34.00.585.csv")
-`dfraw_213` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5cf80c2ccbe8f10016dba137_Colour_Similarity_Experiment_2020-11-18_20h34.49.712.csv")
-`dfraw_214` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5fa27915a7a32b44f3b2f44a_Colour_Similarity_Experiment_2020-11-19_03h31.31.209.csv")
-`dfraw_215` <- read.csv("/Users/bethfisher/Documents/Pilotdata_simcolour/5d4857023c661b0001653a5d_Colour_Similarity_Experiment_2020-11-20_01h01.24.749.csv")
-
-
-trial_vars<- c( "participant",
-                "Colour_1", "Colour_2", "Colour1", "Colour2", 
-                "similarity", "response_time", "catchnumber", "Ecc", "catchnumberprac", "catchresponse", "catchtrialorder", "screen_size_x","screen_size_y","viewerdistancecm", 'viewer_distance',"trialnumber")
-
-dftrials_201 <- dfraw_201[trial_vars]
-dftrials_202 <- dfraw_202[trial_vars]
-dftrials_203 <- dfraw_203[trial_vars]
-dftrials_204 <- dfraw_204[trial_vars]
-dftrials_205 <- dfraw_205[trial_vars]
-dftrials_206 <- dfraw_206[trial_vars]
-dftrials_207 <- dfraw_207[trial_vars]
-dftrials_208 <- dfraw_208[trial_vars]
-dftrials_209 <- dfraw_209[trial_vars]
-dftrials_210 <- dfraw_210[trial_vars]
-dftrials_211 <- dfraw_211[trial_vars]
-dftrials_212 <- dfraw_212[trial_vars]
-dftrials_213 <- dfraw_213[trial_vars]
-dftrials_214 <- dfraw_214[trial_vars]
-dftrials_215 <- dfraw_215[trial_vars]
-
-# Create one data frame with all participants  
-dftrials <- rbind(dftrials_201, dftrials_202, dftrials_203, dftrials_204, dftrials_205, dftrials_206, dftrials_207, dftrials_208, dftrials_209, dftrials_210, dftrials_211, dftrials_212, dftrials_213, dftrials_214, dftrials_215)
-
-# Save dataframe
-setwd("/Users/bethfisher/Documents/Pilotdata_simcolour")
-save(dftrials, file="dftrials_pilotdata.Rdata")
-
-# LOAD DATA
-setwd("/Users/bethfisher/Documents/Pilotdata_simcolour")
-load("dftrials_pilotdata.Rdata") 
-
 # live dangerously, get rid of pesky warnings
 oldw <- getOption("warn")
 options(warn = -1)
@@ -72,6 +22,68 @@ library(reshape2)
 library(grid)
 library(ggplotify)
 
+
+
+# read the csv data files into a dataframe
+files = list.files(pattern="*.csv")
+data = sapply(files, read.csv, simplify=FALSE) %>% bind_rows(.id = "id")
+
+colnames(data)
+
+# Select variables we need for analysis 
+trial_vars<- c( "participant",
+                "Colour_1", "Colour_2", "Colour1", "Colour2", 
+                "similarity", "response_time", "catchnumber", "Ecc", "catchnumberprac", "catchresponse", "catchtrialorder", "screen_size_x","screen_size_y","viewerdistancecm", 'viewer_distance',"trialnumber","Ecc")
+
+data <- subset(data, select = trial_vars)
+
+
+# Select relevant trials for catch trials 
+
+get.catchtrial.info <- function(df.catchtrialorder){
+  info <- (unique(df.catchtrialorder)[2])
+  info <- as.character(info) # convert to string
+  info <- str_sub(info, 2, -2) # remove the square brackets
+  info <- str_split(info, pattern = fixed(',')) # get a vector of the catch trials in string format
+  info <- info[[1]]
+  #print(info) # testing
+  info <- as.numeric(info) # convert to numeric
+  return(info)
+}
+
+add.catchtrial.info <- function(df){
+  IDs <- unique(df$participant)
+  colnames <- colnames(df)
+  output.df <- df[FALSE,]
+  for(ID in IDs){
+    tempdf <- subset(df, participant == ID)
+    catch.trials <- get.catchtrial.info(tempdf$catchtrialorder)
+    tempdf$catch.trial <- ifelse(is.element(tempdf$trialnumber,catch.trials),TRUE,FALSE)
+    #print(colnames(tempdf)) #testing
+    output.df <- rbind(output.df,tempdf)
+  }
+  return(output.df)
+  
+
+data$catch.trials <- NA # need to add this here to make stuff work nicely later
+test <- add.catchtrial.info(data)
+  
+}
+
+# Check catch scores 
+catch_trial_checker <- function(datadf){
+  
+  subjectlist <- sort(unique(test$participant))
+  print("Catch scores")
+  for (participant in subjectlist){
+    subjectdf <- test[which(test$participant == participant),] 
+    catch_trials <- subset(subjectdf, catch.trial == TRUE)
+    catch_num = nrow(catch_trials)
+    catch_correct = nrow(subset(catch_trials, catchnumber == catchresponse))
+    
+    print(paste("Subject",participant,":",catch_correct,"/",catch_num))
+  }
+}
 
 
 # Screen parameters 
@@ -129,126 +141,80 @@ screen_parameters <- function(dftrials,individual=FALSE){
 }  
 
 
-screen_parameters(dftrials,individual=TRUE)
+# Create data frame for trials 
+dftrials <- subset(data, !is.na(Colour1))
 
-## HELP NEEDED CATCH TRIAL ORDER INTO VECTOR ##
-
-library(stringr)
-
-# Create data frame with catch trial order 
-
-dfcatch <- dftrials[which(!is.na(dftrials$trialnumber)),] 
-
-# Creates numeric vector but the first and last numbers are NA
-
-dfcatch$catchtrialnumeric <- lapply(str_split(dfcatch$catchtrialorder,","), as.numeric)
-
-# Does not work only NAs
-dfcatch$catchtrialnum <- as.numeric(dfcatch$catchtrialorder)
-
-
-
-# My attempt 
-
-subjectdf <- dfcatch[which(dfcatch$participant == '5db43b6a2f45e7000bb7ab5c'),] 
-catchtrialorderv <- c(194,66,46,191,122,18,180,70,148,30,165,120,117,196,248,111,12,28,121,190)
-subjectdf$catchtrialo <- NA
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[1]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[2]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[3]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[4]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[5]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[6]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[7]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[8]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[9]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[10]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[11]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[12]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[13]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[14]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[15]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[16]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[17]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[18]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[19]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[20]] <-1
-subjectdf <- subjectdf[which(subjectdf$catchtrialo==1),] 
-subjectdf$correct <- ifelse(subjectdf$catchresponse == subjectdf$catchnumber,1,0)
-score <- sum(subjectdf$correct)/nrow(subjectdf)
-print(score)
-
-
-
-subjectdf <- dfcatch[which(dfcatch$participant == '5f813d7e8973881f63254341'),] 
-subjectdf$catchtrialo <- NA
-subjectdf$catchtrialo[subjectdf$trialnumber == subjectdf$catchtrialorder[1]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[2]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[3]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[4]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[5]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[6]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[7]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[8]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[9]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[10]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[11]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[12]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[13]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[14]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[15]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[16]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[17]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[18]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[19]] <-1
-subjectdf$catchtrialo[subjectdf$trialnumber == catchtrialorderv[20]] <-1
-subjectdf <- subjectdf[which(subjectdf$catchtrialo==1),] 
-subjectdf$correct <- ifelse(subjectdf$catchresponse == subjectdf$catchnumber,1,0)
-score <- sum(subjectdf$correct)/nrow(subjectdf)
-print(score)
-
-
-
-dfcatch$trialnumber[dfcatch$participant == '5db43b6a2f45e7000bb7ab5c']	
-
-
-
-# Catch trial results 
-
-# calculate the catch trial score for a subject
-catch_score <- function(dftrials){
-  dftrials <- subset(dftrials,  catchtrialorder[1] == trialnumber, trialnumber == catchtrialorder[2], trialnumber == catchtrialorder[3], trialnumber == catchtrialorder[4], trialnumber == catchtrialorder[5], trialnumber == catchtrialorder[6], trialnumber == catchtrialorder[7], trialnumber == catchtrialorder[8], trialnumber == catchtrialordrer[9], trialnumber == catchtrialorder[10], trialnumber == catchtrialorder[11], trialnumber == catchtrialorder[12], trialnumber == catchtrialorder[13], trialnumber == catchtrialorder[14], trialnumber == catchtrialorder[15],trialnumber == catchtrialorder[16], trialnumber == catchtrialorder[17], trialnumber == catchtrialordrer[18], trialnumber == catchtrialorder[19],trialnumber == catchtrialorder[20])
-  dftrials$correct <- ifelse(dftrials$catchnumber == dftrials$catchresponse, 1, 0) # determine whether they got the catch trials right
-  score <- sum(datadf$correct)/nrow(datadf) # get the score
-  return(score)
+# Label participant number from 1 - 15 
+dftrials$ID <- NA
+subjectlist <- unique(dftrials$participant)
+k= 0
+for (participant in subjectlist){
+  k = k + 1
+  dftrials$ID[dftrials$participant == participant] <- k
 }
-catch_score(dftrials)
 
+dftrials <- subset(data, !is.na(Colour1))
 
-catch_score <- function(dftrials_201){
-  dftrials_201 <- subset(dftrials_201,  catchtrialorder[1] == trialnumber, trialnumber == catchtrialorder[2], trialnumber == catchtrialorder[3], trialnumber == catchtrialorder[4], trialnumber == catchtrialorder[5], trialnumber == catchtrialorder[6], trialnumber == catchtrialorder[7], trialnumber == catchtrialorder[8], trialnumber == catchtrialordrer[9], trialnumber == catchtrialorder[10], trialnumber == catchtrialorder[11], trialnumber == catchtrialorder[12], trialnumber == catchtrialorder[13], trialnumber == catchtrialorder[14], trialnumber == catchtrialorder[15],trialnumber == catchtrialorder[16], trialnumber == catchtrialorder[17], trialnumber == catchtrialordrer[18], trialnumber == catchtrialorder[19],trialnumber == catchtrialorder[20])
-  dftrials_201$correct <- ifelse(dftrials_201$catchnumber == dftrials_201$catchresponse, 1, 0) # determine whether they got the catch trials right
-  score <- sum(dftrials_201$correct)/nrow(dftrials_201) # get the score
-  return(score)
+# Check average Response Time
+rt_cutoff = 700 # mean reaction times must be above this
+
+rt_avg <- function(data){
+  return(median(data$response_time))
 }
-catch_score(dftrials_201)
-# catch trial checker
-catch_trial_checker <- function(datadf){
+
+
+rt_avg_check <- function(dftrials){
   
   subjectlist <- sort(unique(dftrials$participant))
-  print("Catch scores")
+  print("RT avg")
   for (participant in subjectlist){
     subjectdf <- dftrials[which(dftrials$participant == participant),] 
-    
-    catch_trials <- subset(dftrials, trialnumber == catchtrialorder[1], trialnumber == catchtrialorder[2], trialnumber == catchtrialorder[3], trialnumber == catchtrialorder[4], trialnumber == catchtrialorder[5], trialnumber == catchtrialorder[6], trialnumber == catchtrialorder[7], trialnumber == catchtrialorder[8], trialnumber == catchtrialordrer[9], trialnumber == catchtrialorder[10], trialnumber == catchtrialorder[11], trialnumber == catchtrialorder[12], trialnumber == catchtrialorder[13], trialnumber == catchtrialorder[14], trialnumber == catchtrialorder[15],trialnumber == catchtrialorder[16], trialnumber == catchtrialorder[17], trialnumber == catchtrialordrer[18], trialnumber == catchtrialorder[19],trialnumber == catchtrialorder[20])
-    catch_num = nrow(catch_trials)
-    catch_correct = nrow(subset(catch_trials, catchnumber == catchresponse))
-    
-    print(paste("Subject",participant,":",catch_correct,"/",catch_num))
+    rt = rt_avg(subjectdf)
+    print(paste("Subject:",participant,"mean rt",rt))
   }
 }
 
-catch_trial_checker(dftrials)
+rt_avg_check(dftrials)
+
+# changing color values from RGB to hex for graphing purpose
+dftrials$Colour1 <- as.character(dftrials$Colour1)
+dftrials$Colour1 <- revalue(dftrials$Colour1, 
+                            c(  "1" = '#FF0000',
+                                "2" = '#FFAA00',
+                                "3" = '#AAFF00',
+                                "4" = '#00FF00',
+                                "5" = '#00FFA9',
+                                "6" = '#00A9FF',
+                                "7" = '#0000FF',
+                                "8" = '#AA00FF',
+                                "9" = '#FF00AA'))
+dftrials$Colour2 <- as.character(dftrials$Colour2)
+dftrials$Colour2 <- revalue(dftrials$Colour2, 
+                            c(  "1" = '#FF0000',
+                                "2" = '#FFAA00',
+                                "3" = '#AAFF00',
+                                "4" = '#00FF00',
+                                "5" = '#00FFA9',
+                                "6" = '#00A9FF',
+                                "7" = '#0000FF',
+                                "8" = '#AA00FF',
+                                "9" = '#FF00AA'))
+
+# colors for the labels
+# red, orange, yellow, green, cyan, cyan-blue, blue, purple, pink
+colors <- c('#FF0000','#FFAA00','#AAFF00','#00FF00','#00FFA9','#00A9FF','#0000FF','#AA00FF','#FF00AA')
+# can change the way the plot line up
+# red, pink, orange, purple, yellow, blue, green, cyan-blue, cyan
+#colors <- c('#FF0000','#FF00AA','#FFAA00','#AA00FF','#AAFF00','#0000FF','#00FF00','#00A9FF','#00FFA9')
+abcolors <- sort(colors) # this was messing up the asymmetry plot, maybe useful for some other stuff
+
+# changing from int indicators in the .csv file to more readable labels for eccentricity
+foveal = -1
+peripheral = 1
+
+# set the maximum and minimum dissimilarity values for later analysis
+min_val = 0
+max_val = 6
 
 
 trace_cutoff = 2 # mean dissimilarity for physically identical colours must be below this
@@ -296,7 +262,6 @@ simhistplot <- function(datadf){
     return(plot)
 }
 
-simhistplot(dftrials)
 
 simhistplot_summary <- function(datadf){
     
@@ -311,9 +276,9 @@ simhistplot_summary <- function(datadf){
     
 }
 
-simhistplot_summary(dftrials)
 
 # reaction time for each similarity
+
 rsplot <- function(datadf){
     
     plot <- ggplot(dftrials, aes(x= similarity, y=response_time)) + 
@@ -326,22 +291,74 @@ rsplot <- function(datadf){
     return(plot)
 }
 
-rsplot(dftrials)
 
-rsplot_summary <- function(datadf){
-    
-    datadf$subject <- as.character(datadf$subject) # necessary for visualisation
-    
-    plot <- ggplot(datadf, aes(x= similarity, y=response_time,group = subject, color = subject)) + 
-    stat_summary(fun.y = mean, geom = "line", size=0.8) + 
-    #stat_summary(fun.data = mean_se, geom = "errorbar", size =0.5, aes(width=0.5)) +
-    scale_x_discrete(limits=c(0,1,2,3,4,5,6,7), name = 'Dissimilarity') + ylab('Mean Reaction Time (ms)') +
-    theme(legend.position = "none") +
-    ylim(0,4000) # anyone taking more than 4 seconds has probably mindwandered 
-    
+rsplot_all <- function(data){
+  subjectlist <- sort(unique(dftrials$ID))
+  par(mfrow=c(3,5))
+  for (ID in subjectlist){
+    subjectdf <- dftrials[which(dftrials$ID==ID),]
+    plot <- rsplot(subjectdf)
     return(plot)
-    
+  }
 }
+
+
+
+
+# correlation between reaction times and similarity judgements
+# grouping at individual trial, individual participant, experiment or entire population level
+rt_similarity_cor <- function(dftrials,level='participant'){
+  
+  if(level=="participant"){
+    dftrials<- dftrials%>% 
+      group_by(ID) %>% 
+      mutate(rt_similarity_correlation = cor(similarity,response_time))
+    dftrials <- aggregate(dftrials, by=list(dftrials$ID, FUN = mean))
+    
+    
+  }
+  return(dftrials)
+  
+}
+
+rt_similarity_cor(dftrials,level='participant')
+
+rt_similarity_cor <- function(datadf,level='participant'){
+  
+  if(level=="participant"){
+    datadf <- datadf %>% 
+      group_by(subject) %>% 
+      mutate(rt_similarity_correlation = cor(similarity,response_time))
+    datadf <- aggregate(datadf, by=list(datadf$subject), FUN = mean)
+    
+    
+  }
+  return(datadf)
+  
+}
+
+
+
+rt_similarity_cor(dftrials,level='participant')
+
+rt_similarity_plot <- function(dftrials,xlabel='BLANK'){
+  
+  datadf <- rt_similarity_cor(dftrials)
+  
+  datadf[xlabel] = xlabel
+  
+  plot <- ggplot(datadf,aes(x=xlabel,y=rt_similarity_correlation)) + 
+    geom_boxplot() + 
+    geom_dotplot(binaxis='y',stackdir='center',dotsize=0.75) +
+    theme(text = element_text(size=15)) + xlab("")
+  ggtitle(title)
+  
+  plot <- plot + ylab("Correlation (Spearman)") + ylim(-1,1)
+  plot <- plot + geom_hline(yintercept=0, linetype="dashed", color = "blue")
+  return(plot)
+}
+
+rt_similarity_plot(dftrials,xlabel='BLANK')
 
 # reaction time raincloud plot
 rsplot_raincloud <- function(datadf,xtype='linear'){
@@ -459,113 +476,11 @@ aggregate_df <- function(datadf,dependent='color'){
     return(everyonedata)
 }
 
-# Data analysis 
-datadf = read.csv(filename)
-savestr <- substr(filename,1,nchar(filename)-4) # for saving related files later
 
-# Remove practice trial data
-datadf <- subset(datadf, trial_number != 0)
-# changing color values from RGB to hex for graphing purpose
-dftrials$Colour1 <- as.character(dftrials$Colour1)
-dftrials$Colour1 <- revalue(dftrials$Colour1, 
-                                                    c(  "1" = '#FF0000',
-                                                        "2" = '#FFAA00',
-                                                        "3" = '#AAFF00',
-                                                        "4" = '#00FF00',
-                                                        "5" = '#00FFA9',
-                                                        "6" = '#00A9FF',
-                                                        "7" = '#0000FF',
-                                                        "8" = '#AA00FF',
-                                                        "9" = '#FF00AA'))
-dftrials$Colour2 <- as.character(dftrials$Colour2)
-dftrials$Colour2 <- revalue(dftrials$Colour2, 
-                                                    c(  "1" = '#FF0000',
-                                                        "2" = '#FFAA00',
-                                                        "3" = '#AAFF00',
-                                                        "4" = '#00FF00',
-                                                        "5" = '#00FFA9',
-                                                        "6" = '#00A9FF',
-                                                        "7" = '#0000FF',
-                                                        "8" = '#AA00FF',
-                                                        "9" = '#FF00AA'))
-
-# colors for the labels
-# red, orange, yellow, green, cyan, cyan-blue, blue, purple, pink
-colors <- c('#FF0000','#FFAA00','#AAFF00','#00FF00','#00FFA9','#00A9FF','#0000FF','#AA00FF','#FF00AA')
-# can change the way the plot line up
-# red, pink, orange, purple, yellow, blue, green, cyan-blue, cyan
-#colors <- c('#FF0000','#FF00AA','#FFAA00','#AA00FF','#AAFF00','#0000FF','#00FF00','#00A9FF','#00FFA9')
-abcolors <- sort(colors) # this was messing up the asymmetry plot, maybe useful for some other stuff
-
-# changing from int indicators in the .csv file to more readable labels for eccentricity
-foveal = -1
-peripheral = 1
-
-# set the maximum and minimum dissimilarity values for later analysis
-min_val = 0
-max_val = 6
-
-# calculate the catch trial score for a subject
-catch_score <- function(datadf){
-  datadf <- subset(datadf, trial_type == 'catch')
-  datadf$correct <- ifelse(datadf$similarity == datadf$catch_vals, 1, 0) # determine whether they got the catch trials right
-  score <- sum(datadf$correct)/nrow(datadf) # get the score
-  return(score)
-}
-
-
-# catch trial checker
-catch_trial_checker <- function(datadf){
-  
-  subjectlist <- sort(unique(datadf$subject))
-  print("Catch scores")
-  for (subjectid in subjectlist){
-    subjectdf = subset(datadf, subject == subjectid)
-    
-    catch_trials <- subset(subjectdf, trial_type == 'catch')
-    catch_num = nrow(catch_trials)
-    catch_correct = nrow(subset(catch_trials, catch_vals == similarity))
-    
-    print(paste("Subject",subjectid,":",catch_correct,"/",catch_num))
-  }
-}
-
-# Remove catch trials 
-datadf <- subset(datadf, trial_type != 'catch')
-
-# screen parameters
-screen_parameters <- function(datadf,individual=FALSE){
-  
-  subjectlist <- sort(unique(datadf$subject))
-  print("Screen Parameters")
-  screen_fail = 0
-  viewing_fail = 0
-  for (subjectid in subjectlist){
-    subjectdf = subset(datadf, subject == subjectid)
-    
-    screen_size <- round(screen_size(subjectdf)/10,1)
-    viewing_distance <- round(view_distance(subjectdf)/10,1)
-    
-    if(screen_size < 20){screen_fail = screen_fail + 1}
-    if(viewing_distance < 30){viewing_fail = viewing_fail + 1}
-    
-    if(individual){
-      print(paste("Subject",subjectid,":"))
-      print(paste("Screen size:",screen_size,"cm"))
-      print(paste("Viewing distance:",viewing_distance,"cm"))
-      print("")
-    }
-    
-    
-  }
-  print("")
-  print(paste("Screen size issues:",screen_fail,"/",length(subjectlist)))
-  print(paste("Viewing distance issues:",viewing_fail,"/",length(subjectlist)))
-}
 
 
 # factor the dataframes for the plot function
-dissimdata2 <- function(datadf, colors){
+dissimdata2 <- function(dftrials, colors){
     
     # refactor the levels so they can be plotted properly later if need be
     dftrials$Colour1 <- with(dftrials, factor(Colour1, levels = colors))
@@ -574,12 +489,12 @@ dissimdata2 <- function(datadf, colors){
     return(dftrials)
 }
 
-quantify_asymmetry <- function(datadf){
+quantify_asymmetry <- function(dftrials){
     
-    dftrials <- dissimdata2(dftrials, colors)
+    data <- dissimdata2(dftrials, colors)
     
     # aggregate over the remaining columns of interest
-    nmdsdata <- aggregate(dftrials, by = list(dftrials$Colour1, dftrials$Colour2),FUN=mean)
+    nmdsdata <- aggregate(data, by = list(data$Colour1, data$Colour2),FUN=mean)
     nmdsdata$Colour1 <- nmdsdata$Group.1
     nmdsdata$Colour2 <- nmdsdata$Group.2
 
@@ -596,36 +511,36 @@ quantify_asymmetry <- function(datadf){
     return(asymmery_value)
 }
 
-quantify_asymmetry(dftrials)
+
 
 
 # return a list of the asymmetrical values for each subject
 asymValues_list2 <- function(datadf){
     
-    subjectlist <- sort(unique(datadf$subject)) # obtain a list of all the subjects
+    subjectlist <- sort(unique(dftrials$ID)) # obtain a list of all the subjects
     
     asymValues_list <- vector() # array to store the values in
     
     for (ID in subjectlist){ # go through subject by subject
-        subjectdf = subset(datadf, subject == ID) # select the ID for subject of interest
+        subjectdf <-  dftrials[which(dftrials$ID == ID),] 
+        # select the ID for subject of interest
         asymValues_list <- c(asymValues_list, quantify_asymmetry(subjectdf))
     }
     return(asymValues_list)
 }
 
 
-# Dissimplot for all data 
-datadf <- aggregate(datadf, by = list(datadf$Color_1, datadf$Color_2),FUN=mean)
-datadf$Color_1 <- datadf$Group.1
-datadf$Color_2 <- datadf$Group.2
-datatemp <- dissimdata2(dftrials, colors)
-datatemp <- aggregate(datatemp, by = list(datatemp$Colour1, datatemp$Colour2),FUN=mean)
 
+# Dissimplot for all data
 
-dissimplot_temporal <- function(datadf,colors,dependent='color'){
+# Remove participant 10 as they did not understand the task
+
+dftrials <- dftrials[which(dftrials$ID != 10),]
+
+dissimplot_temporal <- function(subjectdf,colors,dependent='color'){
     
     # refine data using function "dissimdata2 "
-    datatemp <- dissimdata2(dftrials, colors)
+    datatemp <- dissimdata2(subjectdf, colors)
     datatemp <- aggregate(datatemp, by = list(datatemp$Colour1, datatemp$Colour2),FUN=mean)
     
     plot <- ggplot(datatemp, aes(x = Group.1, y = Group.2)) +
@@ -641,57 +556,50 @@ dissimplot_temporal <- function(datadf,colors,dependent='color'){
     return(plot)
 }
 
-dissimplot_temporal(dftrials,colors,dependent='color')
 
-# Plot a dissmiliarity matrix for each subject manually 
-dissimplot_temporal_subject <- function(datadf, colors, ID){
+
+
+# Plot a dissmiliarity matrix for all subjects 
+dissimplot_temporal_subject <- function(dftrials, colors){
   
-  #Subset data for the subject 
-  subjectdf = subset(datadf, subject == ID) 
+  IDs <- unique(dftrials$ID)
+  plot_list <- list()
   
-  # labeling the types
-  label1 <- "Subject ID:"
-  label2 <- ID
+  for (ID in IDs){
+  #Subset data for the subject
+    
+  subjectdf = dftrials[which(dftrials$ID == ID),] 
   
   # refine data using function "dissimdata2 "
   datatemp <- dissimdata2(subjectdf, colors)
   
-  plot <- ggplot(datatemp, aes(x = Color_1, y = Color_2)) +
+  plot <- ggplot(datatemp, aes(x = Colour1, y = Colour2)) +
     theme(axis.text.x = element_text(colour = colors), axis.text.y = element_text(colour = colors),
           axis.title.x = element_blank(), axis.title.y = element_blank(),
-          plot.title = element_text(hjust = 0.5))
+          plot.title = element_text(hjust = 0.5))+
+    ggtitle(paste("Subject ID:", ID))
+  
   
   # stuff that's standard across plot types
   plot <- plot + geom_raster(aes(fill = similarity)) +
-    labs(title = label1, label2, sep = " to ") +
     scale_fill_gradientn(colours = c("white","black")) +
     guides(fill=guide_legend(title="Dissimilarity"))
-  return(plot)
-}
-
-# Plot a dissimilarity matrix for each subject by going through a list 
-
-temp_dissim <- function(datadf){
-  subjectlist <- sort(unique(datadf$subject)) # obtain a list of all the subjects
-  plot_list <- list()
-  k = 0
   
-  for (ID in subjectlist){ # go through subject by subject
-    k = k + 1
-    subjectdf = subset(datadf, subject == ID) # select the ID for subject of interest
-    plot <- dissimplot_temporal_subject(subjectdf,colors,ID)
-    plot_list[[k]] <- as.grob(plot) # add it to the plot_list
-    
+  plot_list[[ID]] <- plot
+
   }
-  g <- marrangeGrob(plot_list, nrow=2,ncol=2) # need to manually change layout
-  return(g)
+  plot_grob <- arrangeGrob(grobs=plot_list)
+  return(grid.arrange(plot_grob))
 }
+
+dissimplot_temporal_subject(dfff, colors)
+
 
 # Asymmtery matrix temporal
 
-df2mat_asymmetry_temporal <- function(datadf){
+df2mat_asymmetry_temporal <- function(subjectdf){
     
-    datatemp <- dissimdata2(dftrials, colors)
+    datatemp <- dissimdata2(subjectdf, colors)
     
     # aggregate over the remaining columns of interest
     nmdsdata <- aggregate(datatemp, by = list(datatemp$Colour1, datatemp$Colour2),FUN=mean)
@@ -713,12 +621,11 @@ df2mat_asymmetry_temporal <- function(datadf){
 }
 
 
-df2mat_asymmetry_temporal(dftrials)
 
 # plot an asymmetry matrix for all data
-asymmetry_plot_temporal <- function(datadf, colors){
+asymmetry_plot_temporal <- function(subjectdf, colors){
 
-  datatemp <- df2mat_asymmetry_temporal(dftrials)
+  datatemp <- df2mat_asymmetry_temporal(subjectdf)
   
   # refactor the levels so they can be plotted properly later if need be
   datatemp$colorset <- with(datatemp, factor(colorset, levels = colors))
@@ -738,17 +645,17 @@ asymmetry_plot_temporal <- function(datadf, colors){
   return(plot)
 }
 
-asymmetry_plot_temporal(dftrials, colors)
 
-# Plot an asymmetry matrix for each subject manually 
-asymmetry_plot_temporal_subject <- function(datadf, colors, ID){
+# Plot an asymmetry matrix for all subjects 
+asymmetry_plot_temporal_subject <- function(dftrials, colors){
   
-  subjectdf = subset(datadf, subject == ID) 
+  IDs <- unique(dftrials$ID)
+  plot_list <- list()
   
-  # labeling the types
-  label1 <- "Subject ID:"
-  label2 <- ID
-  
+  for (ID in IDs){
+    #Subset data for the subject
+    
+  subjectdf = dftrials[which(dftrials$ID == ID),] 
   datatemp <- df2mat_asymmetry_temporal(subjectdf)
   
   # refactor the levels so they can be plotted properly later if need be
@@ -758,35 +665,45 @@ asymmetry_plot_temporal_subject <- function(datadf, colors, ID){
   plot <- ggplot(datatemp, aes(x = colorset, y = othercolor)) +
     theme(axis.text.x = element_text(colour = colors), axis.text.y = element_text(colour = colors),
           axis.title.x = element_blank(), axis.title.y = element_blank(),
-          #axis.title.x = element_text("left"), axis.title.y = element_text("right"),
-          plot.title = element_text(hjust = 0.5))
+          plot.title = element_text(hjust = 0.5))+
+    ggtitle(paste("Subject ID:", ID))
   
   # stuff that's standard across plot types
   plot <- plot + geom_raster(aes(fill = asymmetry)) +
-    labs(title = paste(label1, label2, sep = " to ")) +
     scale_fill_gradientn(colours = c("blue","white","red"), limits = c(-4,4)) +
     guides(fill=guide_legend(title="Dissimilarity\nAsymmetry"))
-  return(plot)
+
+  plot_list[[ID]] <- plot
+  }
+  plot_grob <- arrangeGrob(grobs=plot_list)
+  return(grid.arrange(plot_grob))
 }
   
-# Plot asymmetry plot for each subject by going through list 
 
-temp_asymplot <- function(datadf){
-  # matrix to use to define the plot layout, specified manually for now
-  subjectlist <- sort(unique(datadf$subject)) # obtain a list of all the subjects
-  plot_list <- list()
-  k = 0
-    
-    for (ID in subjectlist){ # go through subject by subject
-      k = k + 1
-      subjectdf = subset(datadf, subject == ID) # select the ID for subject of interest
-      plot <- asymmetry_plot_temporal_subject(subjectdf,colors,ID)
-      plot_list[[k]] <- as.grob(plot) # add it to the plot_list
-      
-    }
-    g <- marrangeGrob(plot_list, nrow=2,ncol=2)
-    return(g)
-  }
+
+asymValues_Boxplot <- function(datadf){ # add conditions
+  
+  # prepare the data
+  # make sure to compare 2 patches without temporal asymmetry
+  datadf_2patches <- subset(datadf, datadf$stimuli_count == 2 & is.na(datadf$cue_display_time)) 
+  #Two <- asymValues_list2(datadf_2patches) # the position of the 2 patches are arbitrary
+  LtoR <- asymValues_list(datadf_2patches, "left2right")
+  RtoL <- asymValues_list(datadf_2patches, "right2left")
+  TtoB <- asymValues_list(datadf_2patches, "top2bottom")
+  BtoT <- asymValues_list(datadf_2patches, "bottom2top")
+  
+  # make a list
+  x <- list("LtoR"=LtoR, "RtoL"=RtoL, "TtoB"=TtoB, "BtoT"=BtoT) # connects all data together
+  x <- data.frame(x) # converts the list to data frame
+  
+  # box plot and dots
+  plot <- ggplot(stack(x),aes(x=ind,y=values)) + 
+    geom_boxplot(color="orange") + 
+    geom_dotplot(binaxis='y',stackdir='center',dotsize=0.75, color="skyblue") +
+    theme(text = element_text(size=15)) + xlab("")
+  ggtitle(title)
+  return(plot)
+}
 
 
 

@@ -155,6 +155,10 @@ for (participant in subjectlist){
 
 dftrials <- subset(data, !is.na(Colour1))
 
+# Remove participant 10 
+dftrials <- dftrials[which(dftrials$ID != 10),]
+
+
 # Check average Response Time
 rt_cutoff = 700 # mean reaction times must be above this
 
@@ -530,12 +534,30 @@ asymValues_list2 <- function(datadf){
 }
 
 
+df2mat.full <- function(dftrials){
+  
+  
+  # aggregate over the remaining columns of interest
+  datadf <- aggregate(dftrials, by = list(dftrials$Colour1, dftrials$Colour2),FUN=mean)
+  datadf$Colour1 <- datadf$Group.1
+  datadf$Colour2 <- datadf$Group.2
+  
+  datadf = subset(datadf, select = c("Colour1","Colour2","similarity"))  # get rid of unnecessary columns
+  datadf <- spread(datadf, Colour1, similarity)
+  
+  # convert the dataframe to a matrix
+  datamatrix <- data.matrix(datadf)
+  datamatrix <- datamatrix[,-1] # get rid of the labels in the first column, it messes up the code
+  rownames(datamatrix) <- colnames(datamatrix)
+  return(datamatrix)
+  
+}
+
 
 # Dissimplot for all data
 
 # Remove participant 10 as they did not understand the task
 
-dftrials <- dftrials[which(dftrials$ID != 10),]
 
 dissimplot_temporal <- function(subjectdf,colors,dependent='color'){
     
@@ -556,7 +578,18 @@ dissimplot_temporal <- function(subjectdf,colors,dependent='color'){
     return(plot)
 }
 
+# CORRELATION BETWEEN PASSES 
 
+# Create a data frame of the 1st and 2nd pass 
+df1stpass <- dftrials[which(dftrials$trialnumber<=162),]
+df2ndpass <- dftrials[which(dftrials$trialnumber>=163),]
+
+
+# Test and re-test correlation 
+disimmat1st <- df2mat.full(df1stpass) # Create matrix for the 1st pass
+disimmat2nd <- df2mat.full(df2ndpass) # Create matrix for the 2nd pass
+# Correlation between the 1st pass matrices and 2nd pass matrices. Spearman as data is not normally distributed 
+cor.test(c(disimmat1st), c(disimmat2nd), method = "spearman")
 
 
 # Plot a dissmiliarity matrix for all subjects 
@@ -644,6 +677,8 @@ asymmetry_plot_temporal <- function(subjectdf, colors){
     guides(fill=guide_legend(title="Dissimilarity\nAsymmetry"))
   return(plot)
 }
+
+asymmetry_plot_temporal(df2, colors)
 
 
 # Plot an asymmetry matrix for all subjects 

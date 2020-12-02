@@ -580,16 +580,51 @@ dissimplot_temporal <- function(subjectdf,colors,dependent='color'){
 
 # CORRELATION BETWEEN PASSES 
 
-# Create a data frame of the 1st and 2nd pass 
-df1stpass <- dftrials[which(dftrials$trialnumber<=162),]
-df2ndpass <- dftrials[which(dftrials$trialnumber>=163),]
+pass_compare_list_Fisher <- function(dftrials){
+  
+  subjectlist <- sort(unique(dftrials$ID)) # obtain a list of all the subjects
+  
+  correlation_list <- vector() # array to store the values in
+  
+  for (ID in subjectlist){ # go through subject by subject
+    subjectdf <-  dftrials[which(dftrials$ID == ID),]  # select the ID for subject of interest
+    correlation_list <- c(correlation_list, FisherZ((matrixcor_pass(subjectdf))))
+    
+    plot <- plot(correlation_list, main = '1st and 2nd pass correlation - z',
+                 xlab='Participant',ylab='z',xlim=c(1,14))
+    axis <- axis(1,seq(1,14,1))
+  }
+  return(correlation_list)
+  return(plot)
+  return(axis)
+}
 
+matrixcor_pear <- function(dftrials){
+  
+  matrix1 <- df2mat.full(dftrials[which(dftrials$trialnumber<=162),])
+  matrix2 <- df2mat.full(dftrials[which(dftrials$trialnumber>=163),])
+  return(cor(c(matrix1), c(matrix2), method = "pearson"))
+}
 
-# Test and re-test correlation 
-disimmat1st <- df2mat.full(df1stpass) # Create matrix for the 1st pass
-disimmat2nd <- df2mat.full(df2ndpass) # Create matrix for the 2nd pass
-# Correlation between the 1st pass matrices and 2nd pass matrices. Spearman as data is not normally distributed 
-cor.test(c(disimmat1st), c(disimmat2nd), method = "spearman")
+pass_compare_list_plot <- function(dftrials){
+  
+  subjectlist <- sort(unique(dftrials$ID)) # obtain a list of all the subjects
+  
+  correlation_list <- vector() # array to store the values in
+  
+  for (ID in subjectlist){ # go through subject by subject
+    subjectdf <-  dftrials[which(dftrials$ID == ID),]  # select the ID for subject of interest
+    correlation_list <- c(correlation_list, (matrixcor_pear(subjectdf)))
+    
+    plot <- plot(correlation_list, main = '1st and 2nd pass Pearson correlation - r',
+                 xlab='Participant',ylab='r',xlim=c(1,14),pch = 21, col="black")
+    axis <- axis(1,seq(1,14,1))
+  }
+  return(correlation_list)
+  return(plot)
+  return(axis)
+}
+
 
 
 # Plot a dissmiliarity matrix for all subjects 
@@ -625,10 +660,11 @@ dissimplot_temporal_subject <- function(dftrials, colors){
   return(grid.arrange(plot_grob))
 }
 
-dissimplot_temporal_subject(dfff, colors)
+
 
 
 # Asymmtery matrix temporal
+
 
 df2mat_asymmetry_temporal <- function(subjectdf){
     
@@ -639,18 +675,117 @@ df2mat_asymmetry_temporal <- function(subjectdf){
     nmdsdata$Colour1 <- nmdsdata$Group.1
     nmdsdata$Colour2 <- nmdsdata$Group.2
 
-    nmdsdata = subset(nmdsdata, select = c("Colour1","Colour2","similarity"))  # get rid of unnecessary columns
+    nmdsdata = subset(nmdsdata, select = c("Colour1","Colour2","similarity",'participant'))  # get rid of unnecessary columns
     nmdsmatrix <- spread(nmdsdata, Colour1, similarity) # convert the dataframe to a matrix
-    #nmdsmatrix[is.na(nmdsmatrix)] <- 0  # change NA to 0 
     nmdsmatrix <- data.matrix(nmdsmatrix) # change first column from colour to number(just some label stuff) 
     nmdsmatrix <- nmdsmatrix[,-1] # get rid of the labels in the first column, it messes up the code
-    matdf <- as.data.frame(nmdsmatrix - t(nmdsmatrix)) # calculate the asymmetry
-    #matdf$colorset <- c(abcolors) # adding additional column "colorset"
+    
+    matdf<-  as.data.frame(nmdsmatrix - t(nmdsmatrix)) # calculate the asymmetry
     matdf$colorset <- c(colors) # adding additional column "colorset"
     num_colors <- length(colors)
     matdf <- matdf %>% gather(othercolor,asymmetry ,1:num_colors) # convert the matrix back to the data frame which has the 
                                                                   # column "colortset", "othercolor", "asymmetry"
     return(matdf)
+}
+
+
+
+
+# Create asymmetry dataframes for each subject 
+
+IDs <- unique(dftrials$ID) # Create list of participants to loop through 
+
+for (ID in IDs){
+  #Subset data for the subject
+  
+  subjectdf = dftrials[which(dftrials$ID == ID),] 
+
+datatemp <- dissimdata2(subjectdf, colors)
+  
+nmdsdata <- aggregate(datatemp, by = list(datatemp$Colour1, datatemp$Colour2),FUN=mean)
+nmdsdata$Colour1 <- nmdsdata$Group.1
+nmdsdata$Colour2 <- nmdsdata$Group.2
+nmdsdata = subset(nmdsdata, select = c("Colour1","Colour2","similarity"))  # get rid of unnecessary columns
+nmdsmatrix <- spread(nmdsdata, Colour1, similarity) # convert the dataframe to a matrix
+nmdsmatrix <- data.matrix(nmdsmatrix) # change first column from colour to number(just some label stuff) 
+nmdsmatrix <- nmdsmatrix[,-1] # get rid of the labels in the first column, it messes up the code
+matdf <- as.data.frame(nmdsmatrix - t(nmdsmatrix)) # calculate the asymmetry
+matdf$colorset <- c(colors) # adding additional column "colorset"
+num_colors <- length(colors)
+matdf <- matdf %>% gather(othercolor,asymmetry,1:num_colors)
+matdf$ID <- ID # convert the matrix back to the data frame which has the 
+  # column "colortset", "othercolor", "asymmetry"
+assign(paste("matdf", ID, sep = ""), matdf) # Rename for the subject number 
+}
+
+# Create a data frame with all asymmetry data
+matdfall <- rbind(matdf1, matdf2, matdf3, matdf4, matdf5, matdf6, matdf7, matdf8, matdf9, matdf11, matdf12, matdf13, matdf14, matdf15)
+
+
+# Perform one paired t test for each asymmetry by
+
+color1 <- unique(matdfall$colors) # Create list of colours to loop through
+
+for (colors in color1){
+
+#FF0000 
+
+test1 <- t.test(matdfall$asymmetry[which(matdfall$colorset == colors & matdfall$othercolor =='#FF0000')], mu = 0)
+print(paste("Colour #FF0000 and ", colors))
+print(test1)
+
+#FFAA00
+
+test2 <- t.test(matdfall$asymmetry[which(matdfall$colorset == colors & matdfall$othercolor =='#FFAA00')], mu = 0)
+print(paste("Colour #FFAA00 and ", colors))
+print(test2)
+
+
+#AAFF00 
+
+test3 <- t.test(matdfall$asymmetry[which(matdfall$colorset == colors & matdfall$othercolor =='#AAFF00')], mu = 0)
+print(paste("Colour #AAFF00  and ", colors))
+print(test3)
+
+
+#00FF00
+
+test4 <- t.test(matdfall$asymmetry[which(matdfall$colorset == colors & matdfall$othercolor =='#00FF00')], mu = 0)
+print(paste("Colour #00FF00 and ", colors))
+print(test4)
+
+
+#00FFA9 
+
+test5 <- t.test(matdfall$asymmetry[which(matdfall$colorset == colors & matdfall$othercolor == '#00FFA9')], mu = 0)
+print(paste("Colour #00FFA9  and ", colors))
+print(test5)
+
+#00A9FF 
+
+test6 <- t.test(matdfall$asymmetry[which(matdfall$colorset == colors & matdfall$othercolor =='#00A9FF')], mu = 0)
+print(paste("Colour #00A9FF and ", colors))
+print(test6)
+
+
+#0000FF 
+
+test7 <- t.test(matdfall$asymmetry[which(matdfall$colorset == colors & matdfall$othercolor =='#0000FF')], mu = 0)
+print(paste("Colour #0000FF and ", colors))
+print(test7)
+
+
+#AA00FF 
+
+test8 <- t.test(matdfall$asymmetry[which(matdfall$colorset == colors & matdfall$othercolor =='#AA00FF')], mu = 0)
+print(paste("Colour #AA00FF  and ", colors))
+print(test8)
+
+#FF00AA
+
+test9 <- t.test(matdfall$asymmetry[which(matdfall$colorset == colors & matdfall$othercolor =='#FF00AA')], mu = 0)
+print(paste("Colour #FF00AA and ", colors))
+print(test9)
 }
 
 
@@ -714,35 +849,6 @@ asymmetry_plot_temporal_subject <- function(dftrials, colors){
   return(grid.arrange(plot_grob))
 }
   
-
-
-asymValues_Boxplot <- function(datadf){ # add conditions
-  
-  # prepare the data
-  # make sure to compare 2 patches without temporal asymmetry
-  datadf_2patches <- subset(datadf, datadf$stimuli_count == 2 & is.na(datadf$cue_display_time)) 
-  #Two <- asymValues_list2(datadf_2patches) # the position of the 2 patches are arbitrary
-  LtoR <- asymValues_list(datadf_2patches, "left2right")
-  RtoL <- asymValues_list(datadf_2patches, "right2left")
-  TtoB <- asymValues_list(datadf_2patches, "top2bottom")
-  BtoT <- asymValues_list(datadf_2patches, "bottom2top")
-  
-  # make a list
-  x <- list("LtoR"=LtoR, "RtoL"=RtoL, "TtoB"=TtoB, "BtoT"=BtoT) # connects all data together
-  x <- data.frame(x) # converts the list to data frame
-  
-  # box plot and dots
-  plot <- ggplot(stack(x),aes(x=ind,y=values)) + 
-    geom_boxplot(color="orange") + 
-    geom_dotplot(binaxis='y',stackdir='center',dotsize=0.75, color="skyblue") +
-    theme(text = element_text(size=15)) + xlab("")
-  ggtitle(title)
-  return(plot)
-}
-
-
-
-
 
 
 

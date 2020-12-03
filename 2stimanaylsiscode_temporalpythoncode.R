@@ -788,7 +788,69 @@ print(paste("Colour #FF00AA and ", colors))
 print(test9)
 }
 
+# Variance of asymmetry 
 
+color1 <- unique(matdfall$colors) # Create list of colours to loop through
+
+for (colors in color1){
+  
+#FF0000 
+
+var1 <- var.test(matdfall$asymmetry[which(matdfall$colorset == colors & matdfall$othercolor =='#FF0000')], matdfall$asymmetry[which(matdfall$colorset != colors | matdfall$othercolor !='#FF0000')], alternative = "greater")
+print(paste("Colour #FF0000 and ", colors))
+print(var1)
+
+#FFAA00
+
+var2 <- var.test(matdfall$asymmetry[which(matdfall$colorset == colors & matdfall$othercolor =='#FFAA00')],matdfall$asymmetry[which(matdfall$colorset != colors | matdfall$othercolor !='#FFAA00')], alternative = "greater")
+print(paste("Colour #FFAA00 and ", colors))
+print(var2)
+
+#AAFF00 
+
+var3 <- var.test(matdfall$asymmetry[which(matdfall$colorset == colors & matdfall$othercolor =='#AAFF00')], matdfall$asymmetry[which(matdfall$colorset != colors | matdfall$othercolor !='#AAFF00')], alternative = 'greater')
+print(paste("Colour #AAFF00 and ", colors))
+print(var3)
+
+
+#00FF00
+
+var4 <- var.test(matdfall$asymmetry[which(matdfall$colorset == colors & matdfall$othercolor =='#00FF00')], matdfall$asymmetry[which(matdfall$colorset != colors | matdfall$othercolor !='#00FF00')], alternative = 'greater')
+print(paste("Colour #00FF00 and ", colors))
+print(var4)
+
+#00FFA9 
+
+var5 <- var.test(matdfall$asymmetry[which(matdfall$colorset == colors & matdfall$othercolor =='#00FFA9')], matdfall$asymmetry[which(matdfall$colorset != colors | matdfall$othercolor !='#00FFA9')], alternative = 'greater')
+print(paste("Colour #00FFA9 and ", colors))
+print(var5)
+
+#00A9FF 
+
+var6 <- var.test(matdfall$asymmetry[which(matdfall$colorset == colors & matdfall$othercolor =='#00A9FF')], matdfall$asymmetry[which(matdfall$colorset != colors | matdfall$othercolor !='#00A9FF')], alternative = 'greater')
+print(paste("Colour #00A9FF and ", colors))
+print(var6)
+
+
+#0000FF 
+
+var7 <- var.test(matdfall$asymmetry[which(matdfall$colorset == colors & matdfall$othercolor =='#0000FF')], matdfall$asymmetry[which(matdfall$colorset != colors | matdfall$othercolor !='#0000FF')], alternative = 'greater')
+print(paste("Colour ##0000FF and ", colors))
+print(var7)
+
+
+#AA00FF 
+
+var8 <- var.test(matdfall$asymmetry[which(matdfall$colorset == colors & matdfall$othercolor =='#AA00FF')], matdfall$asymmetry[which(matdfall$colorset != colors | matdfall$othercolor !='#AA00FF')], alternative = 'greater')
+print(paste("Colour #AA00FF  and ", colors))
+print(var8)
+
+#FF00AA
+
+var9 <- var.test(matdfall$asymmetry[which(matdfall$colorset == colors & matdfall$othercolor =='#FF00AA')], matdfall$asymmetry[which(matdfall$colorset != colors | matdfall$othercolor !='#FF00AA')], alternative = 'greater')
+print(paste("Colour #FF00AA and ", colors))
+print(var9)
+}
 
 # plot an asymmetry matrix for all data
 asymmetry_plot_temporal <- function(subjectdf, colors){

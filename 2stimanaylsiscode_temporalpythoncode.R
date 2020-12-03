@@ -578,6 +578,46 @@ dissimplot_temporal <- function(subjectdf,colors,dependent='color'){
     return(plot)
 }
 
+# Variance plot for similarity data 
+datavar <- dissimdata2(dftrials,colors)
+datavar <- aggregate(dftrials, by = list(dftrials$Colour1, dftrials$Colour2), FUN=var)
+
+plot <- ggplot(datavar, aes(x = Group.1, y = Group.2)) +
+  theme(axis.text.x = element_text(colour = colors), axis.text.y = element_text(colour = colors),
+        axis.title.x = element_blank(), axis.title.y = element_blank(),
+        plot.title = element_text(hjust = 0.5))
+
+# stuff that's standard across plot types
+plot <- plot + geom_raster(aes(fill = similarity)) +
+  labs(title = 'Presented - Response Screen') +
+  scale_fill_gradientn(colours = c("white",'orange')) +
+  guides(fill=guide_legend(title="Variance"))
+(plot)
+
+
+
+
+dissimplot_temporal <- function(subjectdf,colors,dependent='color'){
+  
+  # refine data using function "dissimdata2 "
+  datatemp <- dissimdata2(subjectdf, colors)
+  datatemp <- aggregate(datatemp, by = list(datatemp$Colour1, datatemp$Colour2),FUN=mean())
+  
+  plot <- ggplot(datatemp, aes(x = Group.1, y = Group.2)) +
+    theme(axis.text.x = element_text(colour = colors), axis.text.y = element_text(colour = colors),
+          axis.title.x = element_blank(), axis.title.y = element_blank(),
+          plot.title = element_text(hjust = 0.5))
+  
+  # stuff that's standard across plot types
+  plot <- plot + geom_raster(aes(fill = similarity)) +
+    labs(title = 'Presented - Response Screen') +
+    scale_fill_gradientn(colours = c("white","black")) +
+    guides(fill=guide_legend(title="Dissimilarity"))
+  return(plot)
+}
+
+dissimplot_temporal(dftrials,colors,dependent='color')
+
 # CORRELATION BETWEEN PASSES 
 
 pass_compare_list_Fisher <- function(dftrials){
@@ -691,6 +731,7 @@ df2mat_asymmetry_temporal <- function(subjectdf){
 
 
 
+
 # Create asymmetry dataframes for each subject 
 
 IDs <- unique(dftrials$ID) # Create list of participants to loop through 
@@ -800,6 +841,7 @@ var1 <- var.test(matdfall$asymmetry[which(matdfall$colorset == colors & matdfall
 print(paste("Colour #FF0000 and ", colors))
 print(var1)
 
+
 #FFAA00
 
 var2 <- var.test(matdfall$asymmetry[which(matdfall$colorset == colors & matdfall$othercolor =='#FFAA00')],matdfall$asymmetry[which(matdfall$colorset != colors | matdfall$othercolor !='#FFAA00')], alternative = "greater")
@@ -876,6 +918,23 @@ asymmetry_plot_temporal <- function(subjectdf, colors){
 }
 
 asymmetry_plot_temporal(df2, colors)
+
+# Plot variance of asymmetry 
+
+asymvar <- aggregate(matdfall, by = list(matdfall$colors, matdfall$othercolor),FUN=var) # Calculate the variance of the asymmtery 
+
+plot <- ggplot(asymvar, aes(x = Group.1, y = Group.2)) +
+  theme(axis.text.x = element_text(colour = colors), axis.text.y = element_text(colour = colors),
+        axis.title.x = element_blank(), axis.title.y = element_blank(),
+        plot.title = element_text(hjust = 0.5))
+
+# stuff that's standard across plot types
+plot <- plot + geom_raster(aes(fill = asymmetry)) +
+  labs(title = 'Presented - Response Screen') +
+  scale_fill_gradientn(colours = c("white",'orange')) +
+  guides(fill=guide_legend(title="Variance"))
+(plot)
+
 
 
 # Plot an asymmetry matrix for all subjects 

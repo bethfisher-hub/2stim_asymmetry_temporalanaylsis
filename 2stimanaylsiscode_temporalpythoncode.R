@@ -578,9 +578,42 @@ dissimplot_temporal <- function(subjectdf,colors,dependent='color'){
     return(plot)
 }
 
-# Variance plot for similarity data 
+
+
+# Plot between subject response variance 
+
+# Calculate variance in similarity within subject
+datavar <-  group_by(dftrials, Colour1, Colour2, participant) %>% 
+  summarise(
+    count = n(), 
+    varsim = var(similarity, na.rm = TRUE),
+ )
+
+# Calculate the mean variance accross subjects
+datavar  <-  group_by(datavar, Colour1, Colour2) %>% 
+  summarise(
+    count = n(), 
+    varmean = mean(varsim, na.rm = TRUE),
+  )
+
+
+plot <- ggplot(datavar, aes(x = Colour1, y = Colour2)) +
+  theme(axis.text.x = element_text(colour = colors), axis.text.y = element_text(colour = colors),
+        axis.title.x = element_blank(), axis.title.y = element_blank(),
+        plot.title = element_text(hjust = 0.5))
+
+# stuff that's standard across plot types
+plot <- plot + geom_raster(aes(fill = varmean)) +
+  labs(title = 'Presented - Response Screen') +
+  scale_fill_gradientn(colours = c("white",'orange')) +
+  guides(fill=guide_legend(title="Variance"))
+(plot)
+
+
+
+# Variance plot for similarity data  OLD WAY INCORRECT
 datavar <- dissimdata2(dftrials,colors)
-datavar <- aggregate(dftrials, by = list(dftrials$Colour1, dftrials$Colour2), FUN=var)
+datavar <- aggregate(dftrials, by = list(dftrials$Colour1, dftrials$Colour2), FUN=var())
 
 plot <- ggplot(datavar, aes(x = Group.1, y = Group.2)) +
   theme(axis.text.x = element_text(colour = colors), axis.text.y = element_text(colour = colors),
@@ -894,6 +927,8 @@ print(paste("Colour #FF00AA and ", colors))
 print(var9)
 }
 
+
+
 # plot an asymmetry matrix for all data
 asymmetry_plot_temporal <- function(subjectdf, colors){
 
@@ -917,7 +952,6 @@ asymmetry_plot_temporal <- function(subjectdf, colors){
   return(plot)
 }
 
-asymmetry_plot_temporal(df2, colors)
 
 # Plot variance of asymmetry 
 

@@ -580,7 +580,7 @@ dissimplot_temporal <- function(subjectdf,colors,dependent='color'){
 
 
 
-# Plot between subject response variance 
+# Plot within subject response variance 
 
 # Calculate variance in similarity within subject
 datavar <-  group_by(dftrials, Colour1, Colour2, participant) %>% 
@@ -589,13 +589,14 @@ datavar <-  group_by(dftrials, Colour1, Colour2, participant) %>%
     varsim = var(similarity, na.rm = TRUE),
  )
 
-# Calculate the mean variance accross subjects
+# Calculate the mean variance across subjects
 datavar  <-  group_by(datavar, Colour1, Colour2) %>% 
   summarise(
     count = n(), 
     varmean = mean(varsim, na.rm = TRUE),
   )
 
+# Plot the mean variance accross subjects
 
 plot <- ggplot(datavar, aes(x = Colour1, y = Colour2)) +
   theme(axis.text.x = element_text(colour = colors), axis.text.y = element_text(colour = colors),
@@ -610,18 +611,31 @@ plot <- plot + geom_raster(aes(fill = varmean)) +
 (plot)
 
 
+# Variance plot for between subject variance 
 
-# Variance plot for similarity data  OLD WAY INCORRECT
-datavar <- dissimdata2(dftrials,colors)
-datavar <- aggregate(dftrials, by = list(dftrials$Colour1, dftrials$Colour2), FUN=var())
+# Calculate the mean similarity for each participant 
 
-plot <- ggplot(datavar, aes(x = Group.1, y = Group.2)) +
+datavar1 <-  group_by(dftrials, Colour1, Colour2, participant) %>% 
+  summarise(
+    count = n(), 
+    meansim = mean(similarity, na.rm = TRUE),
+  )
+
+# Calculate the mean variance across subjects
+datavar1  <-  group_by(datavar1, Colour1, Colour2) %>% 
+  summarise(
+    count = n(), 
+    varsim = var(meansim, na.rm = TRUE),
+  )
+
+
+plot <- ggplot(datavar1, aes(x = Colour1, y = Colour2)) +
   theme(axis.text.x = element_text(colour = colors), axis.text.y = element_text(colour = colors),
         axis.title.x = element_blank(), axis.title.y = element_blank(),
         plot.title = element_text(hjust = 0.5))
 
 # stuff that's standard across plot types
-plot <- plot + geom_raster(aes(fill = similarity)) +
+plot <- plot + geom_raster(aes(fill = varsim)) +
   labs(title = 'Presented - Response Screen') +
   scale_fill_gradientn(colours = c("white",'orange')) +
   guides(fill=guide_legend(title="Variance"))
@@ -791,6 +805,7 @@ matdf$ID <- ID # convert the matrix back to the data frame which has the
   # column "colortset", "othercolor", "asymmetry"
 assign(paste("matdf", ID, sep = ""), matdf) # Rename for the subject number 
 }
+
 
 # Create a data frame with all asymmetry data
 matdfall <- rbind(matdf1, matdf2, matdf3, matdf4, matdf5, matdf6, matdf7, matdf8, matdf9, matdf11, matdf12, matdf13, matdf14, matdf15)
